@@ -21,6 +21,12 @@ tags: ["postgresql", "sql", "database", "task-manager"]
 owner: "Development Team"
 reviewedDate: "2026-11-12"
 nextReview: "2027-02-12"
+revisions:
+  - chat_id: "task-manager-prd-20261113-061750"
+    model: "unknown/unknown@unknown"
+    date: "2026-11-13"
+    change: "Clarified that task archive/restore is required and is distinct from individual permanent deletion."
+    ai_log: "ai-logs/2026/11/13/task-manager-prd-20261113-061750/conversation.md"
 ---
 
 # PostgreSQL Instructions
@@ -48,15 +54,15 @@ Apply these rules to the task-manager relational schema and SQL. PostgreSQL is t
 ## Types, Queries, and Transactions
 
 - Store due dates as date-only values (`DATE`); never encode them as midnight UTC. Store operational instants in UTC-aware timestamp values and store the configured IANA workspace time-zone identifier separately.
-- Store task version state for conditional updates. Perform the version predicate and update atomically; a stale version must not silently overwrite a newer row or restore a removed task.
+- Store task version state for conditional updates. Perform the version predicate and update atomically; a stale version must not silently overwrite a newer row or resurrect a task removed through approved account-level deletion.
 - Use transactions for related changes that must succeed together, including workspace/default-list creation and task/list mutations with their version increments.
 - Parameterize all values. Do not build SQL by concatenating user input. Implement title search as a literal, case-insensitive substring match; escape pattern metacharacters when using pattern operators so user input remains literal.
 - Avoid premature indexes or query complexity. Add indexes based on approved access patterns and measured workload; document the query they support and verify query plans when data volume is representative.
-- Use foreign keys and restrictive delete behavior that preserve required records. Do not add list deletion, whole-workspace deletion, soft-delete/trash, or automatic inactivity cleanup without a product decision.
+- Use foreign keys and restrictive delete behavior that preserve required records. Preserve the PRD-defined task archive/restore lifecycle as restorable and distinct from permanent deletion; do not expose individual task deletion in v1. Do not add list deletion, whole-workspace deletion, a separate trash/deleted state, or automatic inactivity cleanup without separate product approval.
 
 ## Deletion, Backups, and Migrations
 
-- Keep the deletion ledger independent of database restoration and limited to opaque workspace/task identifiers and deletion times; do not put task content or credentials in it.
+- Keep the deletion ledger independent of database restoration and limited to opaque workspace/task identifiers and deletion times; do not put task content or credentials in it. The ledger does not authorize an individual task-delete action; account-level deletion remains governed by its approved policy.
 - Before a restored database is available, apply the latest ledger. If it is unavailable or cannot be applied, keep the restored service unavailable. Coordinate database and ledger consistency explicitly rather than assuming a single transaction covers independent stores.
 - Protect backups and expire them within the approved 30-day window. Retain ledger entries only as long as needed to cover backups that may contain the deleted task.
 - Use reviewed, repeatable migrations and preserve compatibility for deployment and rollback. Validate constraints and data transformations against representative data; do not treat an application rollback as a database rollback.
@@ -68,6 +74,7 @@ Apply these rules to the task-manager relational schema and SQL. PostgreSQL is t
 - [ ] Constraints prevent cross-workspace task/list relationships.
 - [ ] Date-only due dates and UTC instants use distinct representations.
 - [ ] Version-checked mutations are atomic under concurrent requests.
+- [ ] Task archive and restore remain reversible; no individual task-delete operation is exposed.
 - [ ] Required multi-record changes use transactions.
 - [ ] Literal title search handles wildcard characters as literal input.
 - [ ] Restore applies the independent deletion ledger before serving data.
@@ -75,9 +82,9 @@ Apply these rules to the task-manager relational schema and SQL. PostgreSQL is t
 
 ## Summary
 
-Use PostgreSQL to enforce relational integrity and atomic versioned changes while preserving strict workspace isolation, date-only semantics, and restore-safe deletion handling.
+Use PostgreSQL to enforce relational integrity and atomic versioned changes while preserving strict workspace isolation, date-only semantics, PRD-defined task archive/restore behavior, and restore-safe account-level deletion handling.
 
 **Related Instructions**: [React/TypeScript](react-typescript.instructions.md), [ASP.NET Core](aspnet-core.instructions.md)
-**Document Version**: 1.0.0
-**Last Updated**: 2026-11-12
+**Document Version**: 1.0.1
+**Last Updated**: 2026-11-13
 **Maintainer**: Development Team

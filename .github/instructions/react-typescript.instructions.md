@@ -21,6 +21,12 @@ tags: ["react", "typescript", "frontend", "task-manager"]
 owner: "Development Team"
 reviewedDate: "2026-11-12"
 nextReview: "2027-02-12"
+revisions:
+  - chat_id: "task-manager-prd-20261113-061750"
+    model: "unknown/unknown@unknown"
+    date: "2026-11-13"
+    change: "Aligned task lifecycle guidance with the PRD: archive/restore is required; individual task permanent deletion is prohibited in v1."
+    ai_log: "ai-logs/2026/11/13/task-manager-prd-20261113-061750/conversation.md"
 ---
 
 # React and TypeScript Instructions
@@ -53,7 +59,7 @@ Apply these rules to the task-manager browser interface. The approved stack is R
 - Preserve drafts during refresh. On refresh failure, retain the previous view and show a clear stale/error state; never replace it with an empty list that implies success.
 - On save failure, preserve user input and explain the failure. Show “Saved” only after server confirmation; represent ambiguous outcomes as ambiguous, not as definite failure or success.
 - Handle validation, unauthenticated access, unavailable resources, version conflicts, rate limits, and service failures as distinct user-visible states. Provide pairing or recovery guidance for authentication failure; do not silently create a new workspace.
-- Make task deletion explicit and immediate after confirmation. Do not add undo, trash, list removal, workspace deletion, or other excluded product behavior.
+- Implement task archive and restore as required by the PRD. Individual task permanent deletion is not available in v1. Archive must remain restorable and distinct from account-level data deletion. Follow the PRD for archive visibility and restoration behavior; do not add a task-delete control or irreversible task deletion.
 
 ## Security and Accessibility
 
@@ -68,15 +74,16 @@ Apply these rules to the task-manager browser interface. The approved stack is R
 - [ ] Verify keyboard and screen-reader access for task, list, pairing, and recovery flows.
 - [ ] Verify refresh failure preserves the previous view and unsaved drafts.
 - [ ] Verify stale responses cannot overwrite newer edits and conflicts retain the user's draft.
+- [ ] Verify tasks can be archived and restored, and individual task permanent deletion is not exposed.
 - [ ] Verify no polling, hidden offline writes, sensitive browser persistence, or unauthorized workspace access is introduced.
 - [ ] Verify date-only due-date behavior across browser time zones and workspace-zone boundaries.
 - [ ] Verify excluded product capabilities are not exposed.
 
 ## Summary
 
-Keep the React/TypeScript client accessible and typed, with server-confirmed state, explicit refresh and error behavior, preserved drafts, and no client-side authority over workspace access.
+Keep the React/TypeScript client accessible and typed, with server-confirmed state, explicit refresh and error behavior, preserved drafts, no client-side authority over workspace access, and the PRD-defined archive/restore lifecycle without individual task permanent deletion.
 
 **Related Instructions**: [ASP.NET Core](aspnet-core.instructions.md), [PostgreSQL](postgresql.instructions.md)
-**Document Version**: 1.0.0
-**Last Updated**: 2026-11-12
+**Document Version**: 1.0.1
+**Last Updated**: 2026-11-13
 **Maintainer**: Development Team
